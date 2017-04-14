@@ -20,23 +20,24 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#include <SPI.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <SPI.h>
 
-#define DF_AT45DB081D   1
-#define DF_AT45DB161D   2
-#define DF_AT45DB041D   3
+#define DF_AT45DB081D 1
+#define DF_AT45DB161D 2
+#define DF_AT45DB041D 3
 
 #ifndef DF_VARIANT
 #define DF_VARIANT DF_AT45DB161D
 #endif
 
 #if DF_VARIANT == DF_AT45DB081D
-// configuration for the Atmel AT45DB081D device, Sodaq v2 has AT45DB081D, see doc3596.pdf, 4096 pages of 256/264 bytes
-#define DF_PAGE_ADDR_BITS       12
-#define DF_PAGE_SIZE            264
-#define DF_PAGE_BITS            9
+// configuration for the Atmel AT45DB081D device, Sodaq v2 has AT45DB081D, see
+// doc3596.pdf, 4096 pages of 256/264 bytes
+#define DF_PAGE_ADDR_BITS 12
+#define DF_PAGE_SIZE 264
+#define DF_PAGE_BITS 9
 /*
  * From the AT45DB081D documentation (other variants are not really identical)
  *   "For the DataFlash standard page size (264-bytes), the opcode must be
@@ -47,9 +48,9 @@
 
 #elif DF_VARIANT == DF_AT45DB161D
 // configuration for the Atmel AT45DB161D device
-#define DF_PAGE_ADDR_BITS       12
-#define DF_PAGE_SIZE            528
-#define DF_PAGE_BITS            10
+#define DF_PAGE_ADDR_BITS 12
+#define DF_PAGE_SIZE 528
+#define DF_PAGE_BITS 10
 /*
  * From the AT45DB161B documentation
  *   "For the standard DataFlash page size (528 bytes), the opcode must be
@@ -60,9 +61,9 @@
 
 #elif DF_VARIANT == DF_AT45DB041D
 // configuration for the Atmel AT45DB041D device
-#define DF_PAGE_ADDR_BITS       11
-#define DF_PAGE_SIZE            264
-#define DF_PAGE_BITS            9
+#define DF_PAGE_ADDR_BITS 11
+#define DF_PAGE_SIZE 264
+#define DF_PAGE_BITS 9
 /*
  * From AT45DB041D documentation
  *   "For the DataFlash standard page size (264-bytes), the opcode must be
@@ -74,15 +75,17 @@
 #else
 #error "Unknown DF_VARIANT"
 #endif
-#define DF_NR_PAGES     (1 << DF_PAGE_ADDR_BITS)
+#define DF_NR_PAGES (1 << DF_PAGE_ADDR_BITS)
 
-class Sodaq_Dataflash
-{
+class Sodaq_Dataflash {
 public:
-  void init(uint8_t csPin=SS);
-  void init(uint8_t misoPin, uint8_t mosiPin, uint8_t sckPin, uint8_t ssPin) __attribute__((deprecated("Use: void init(uint8_t csPin=SS)")));
+  void init(uint8_t csPin = SS);
+  void init(uint8_t misoPin, uint8_t mosiPin, uint8_t sckPin, uint8_t ssPin)
+      __attribute__((deprecated("Use: void init(uint8_t csPin=SS)")));
   void readID(uint8_t *data);
   void readSecurityReg(uint8_t *data, size_t size);
+  void activate();
+  void deactivate();
 
   uint8_t readByteBuf1(uint16_t pageAddr);
   void readStrBuf1(uint16_t addr, uint8_t *data, size_t size);
@@ -95,14 +98,15 @@ public:
   void pageErase(uint16_t pageAddr);
   void chipErase();
 
+  void waitTillReady();
   void settings(SPISettings settings);
 
 private:
   uint8_t readStatus();
-  void waitTillReady();
   uint8_t transmit(uint8_t data);
-  void activate();
-  void deactivate();
+  void write(uint8_t data);
+  void writeStr(uint8_t *data, size_t size);
+  void transmitStr(uint8_t *data, uint8_t *out, uint32_t size);
   void setPageAddr(unsigned int PageAdr);
   uint8_t getPageAddrByte0(uint16_t pageAddr);
   uint8_t getPageAddrByte1(uint16_t pageAddr);
@@ -114,6 +118,5 @@ private:
 };
 
 extern Sodaq_Dataflash dflash;
-
 
 #endif // SODAQ_DATAFLASH_H
