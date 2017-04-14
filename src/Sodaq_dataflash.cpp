@@ -206,7 +206,7 @@ void Sodaq_Dataflash::writeBuf1ToPage(uint16_t pageAddr) {
   write(Buf1ToFlashWE);
   setPageAddr(pageAddr);
   deactivate();
-  waitTillReady();
+  // waitTillReady();
 }
 
 void Sodaq_Dataflash::pageErase(uint16_t pageAddr) {
@@ -214,7 +214,7 @@ void Sodaq_Dataflash::pageErase(uint16_t pageAddr) {
   write(PageErase);
   setPageAddr(pageAddr);
   deactivate();
-  waitTillReady();
+  // waitTillReady();
 }
 
 void Sodaq_Dataflash::chipErase() {
@@ -224,7 +224,7 @@ void Sodaq_Dataflash::chipErase() {
   write(0x80);
   write(0x9A);
   deactivate();
-  waitTillReady();
+  // waitTillReady();
 }
 
 void Sodaq_Dataflash::settings(SPISettings settings) {
