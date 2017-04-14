@@ -156,15 +156,18 @@ uint8_t Sodaq_Dataflash::readByteBuf1(uint16_t addr) {
   return data;
 }
 
-// Reads a number of bytes from one of the Dataflash internal SRAM buffer 1
-void Sodaq_Dataflash::readStrBuf1(uint16_t addr, uint8_t *data, size_t size) {
-  activate();
+void Sodaq_Dataflash::beginRead(uint16_t addr) {
   write(Buf1Read);
   write(0x00); // don't care
   write((uint8_t)(addr >> 8));
   write((uint8_t)(addr));
   write(0x00); // don't care
-  // todo: test
+}
+
+// Reads a number of bytes from one of the Dataflash internal SRAM buffer 1
+void Sodaq_Dataflash::readStrBuf1(uint16_t addr, uint8_t *data, size_t size) {
+  activate();
+  beginRead(addr);
   for (size_t i = 0; i < size; i++) {
     *data++ = transmit(0x00);
   }
@@ -182,13 +185,17 @@ void Sodaq_Dataflash::writeByteBuf1(uint16_t addr, uint8_t data) {
   deactivate();
 }
 
-// Writes a number of bytes to one of the Dataflash internal SRAM buffer 1
-void Sodaq_Dataflash::writeStrBuf1(uint16_t addr, uint8_t *data, size_t size) {
-  activate();
+void Sodaq_Dataflash::beginWrite(uint16_t addr) {
   write(Buf1Write);
   write(0x00); // don't care
   write((uint8_t)(addr >> 8));
   write((uint8_t)(addr));
+}
+
+// Writes a number of bytes to one of the Dataflash internal SRAM buffer 1
+void Sodaq_Dataflash::writeStrBuf1(uint16_t addr, uint8_t *data, size_t size) {
+  activate();
+  beginWrite(addr);
   writeStr(data, size);
   deactivate();
 }

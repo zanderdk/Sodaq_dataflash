@@ -86,7 +86,11 @@ public:
   void readSecurityReg(uint8_t *data, size_t size);
   void activate();
   void deactivate();
-
+  void beginWrite(uint16_t addr);
+  void beginRead(uint16_t addr);
+  void write(uint8_t data);
+  void writeStr(uint8_t *data, size_t size);
+  void transmitStr(uint8_t *data, uint8_t *out, uint32_t size);
   uint8_t readByteBuf1(uint16_t pageAddr);
   void readStrBuf1(uint16_t addr, uint8_t *data, size_t size);
   void writeByteBuf1(uint16_t addr, uint8_t data);
@@ -104,9 +108,6 @@ public:
 private:
   uint8_t readStatus();
   uint8_t transmit(uint8_t data);
-  void write(uint8_t data);
-  void writeStr(uint8_t *data, size_t size);
-  void transmitStr(uint8_t *data, uint8_t *out, uint32_t size);
   void setPageAddr(unsigned int PageAdr);
   uint8_t getPageAddrByte0(uint16_t pageAddr);
   uint8_t getPageAddrByte1(uint16_t pageAddr);
