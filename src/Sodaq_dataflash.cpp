@@ -140,6 +140,15 @@ void Sodaq_Dataflash::readPageToBuf1(uint16_t pageAddr) {
   waitTillReady();
 }
 
+// Transfers a page from flash to Dataflash SRAM buffer
+void Sodaq_Dataflash::readPageToBuf2(uint16_t pageAddr) {
+  activate();
+  write(FlashToBuf2Transfer);
+  setPageAddr(pageAddr);
+  deactivate();
+  waitTillReady();
+}
+
 // Reads one byte from one of the Dataflash internal SRAM buffer 1
 uint8_t Sodaq_Dataflash::readByteBuf1(uint16_t addr) {
   unsigned char data = 0;
@@ -156,8 +165,32 @@ uint8_t Sodaq_Dataflash::readByteBuf1(uint16_t addr) {
   return data;
 }
 
-void Sodaq_Dataflash::beginRead(uint16_t addr) {
+// Reads one byte from one of the Dataflash internal SRAM buffer 1
+uint8_t Sodaq_Dataflash::readByteBuf2(uint16_t addr) {
+  unsigned char data = 0;
+
+  activate();
+  write(Buf2Read);
+  write(0x00); // don't care
+  write((uint8_t)(addr >> 8));
+  write((uint8_t)(addr));
+  write(0x00);           // don't care
+  data = transmit(0x00); // read byte
+  deactivate();
+
+  return data;
+}
+
+void Sodaq_Dataflash::beginReadBuf1(uint16_t addr) {
   write(Buf1Read);
+  write(0x00); // don't care
+  write((uint8_t)(addr >> 8));
+  write((uint8_t)(addr));
+  write(0x00); // don't care
+}
+
+void Sodaq_Dataflash::beginReadBuf2(uint16_t addr) {
+  write(Buf2Read);
   write(0x00); // don't care
   write((uint8_t)(addr >> 8));
   write((uint8_t)(addr));
@@ -167,7 +200,17 @@ void Sodaq_Dataflash::beginRead(uint16_t addr) {
 // Reads a number of bytes from one of the Dataflash internal SRAM buffer 1
 void Sodaq_Dataflash::readStrBuf1(uint16_t addr, uint8_t *data, size_t size) {
   activate();
-  beginRead(addr);
+  beginReadBuf1(addr);
+  for (size_t i = 0; i < size; i++) {
+    *data++ = transmit(0x00);
+  }
+  deactivate();
+}
+
+// Reads a number of bytes from one of the Dataflash internal SRAM buffer 1
+void Sodaq_Dataflash::readStrBuf2(uint16_t addr, uint8_t *data, size_t size) {
+  activate();
+  beginReadBuf2(addr);
   for (size_t i = 0; i < size; i++) {
     *data++ = transmit(0x00);
   }
@@ -185,8 +228,26 @@ void Sodaq_Dataflash::writeByteBuf1(uint16_t addr, uint8_t data) {
   deactivate();
 }
 
-void Sodaq_Dataflash::beginWrite(uint16_t addr) {
+// Writes one byte to one to the Dataflash internal SRAM buffer 1
+void Sodaq_Dataflash::writeByteBuf2(uint16_t addr, uint8_t data) {
+  activate();
+  write(Buf2Write);
+  write(0x00); // don't care
+  write((uint8_t)(addr >> 8));
+  write((uint8_t)(addr));
+  write(data); // write data byte
+  deactivate();
+}
+
+void Sodaq_Dataflash::beginWriteBuf1(uint16_t addr) {
   write(Buf1Write);
+  write(0x00); // don't care
+  write((uint8_t)(addr >> 8));
+  write((uint8_t)(addr));
+}
+
+void Sodaq_Dataflash::beginWriteBuf2(uint16_t addr) {
+  write(Buf2Write);
   write(0x00); // don't care
   write((uint8_t)(addr >> 8));
   write((uint8_t)(addr));
@@ -195,7 +256,15 @@ void Sodaq_Dataflash::beginWrite(uint16_t addr) {
 // Writes a number of bytes to one of the Dataflash internal SRAM buffer 1
 void Sodaq_Dataflash::writeStrBuf1(uint16_t addr, uint8_t *data, size_t size) {
   activate();
-  beginWrite(addr);
+  beginWriteBuf1(addr);
+  writeStr(data, size);
+  deactivate();
+}
+
+// Writes a number of bytes to one of the Dataflash internal SRAM buffer 1
+void Sodaq_Dataflash::writeStrBuf2(uint16_t addr, uint8_t *data, size_t size) {
+  activate();
+  beginWriteBuf2(addr);
   writeStr(data, size);
   deactivate();
 }
@@ -204,6 +273,15 @@ void Sodaq_Dataflash::writeStrBuf1(uint16_t addr, uint8_t *data, size_t size) {
 void Sodaq_Dataflash::writeBuf1ToPage(uint16_t pageAddr) {
   activate();
   write(Buf1ToFlashWE);
+  setPageAddr(pageAddr);
+  deactivate();
+  // waitTillReady();
+}
+
+// Transfers Dataflash SRAM buffer 1 to flash page
+void Sodaq_Dataflash::writeBuf2ToPage(uint16_t pageAddr) {
+  activate();
+  write(Buf2ToFlashWE);
   setPageAddr(pageAddr);
   deactivate();
   // waitTillReady();

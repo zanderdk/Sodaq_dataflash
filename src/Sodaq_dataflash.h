@@ -86,18 +86,28 @@ public:
   void readSecurityReg(uint8_t *data, size_t size);
   void activate();
   void deactivate();
-  void beginWrite(uint16_t addr);
-  void beginRead(uint16_t addr);
+  void beginWriteBuf1(uint16_t addr);
+  void beginWriteBuf2(uint16_t addr);
+
+  void beginReadBuf1(uint16_t addr);
+  void beginReadBuf2(uint16_t addr);
   void write(uint8_t data);
   void writeStr(uint8_t *data, size_t size);
   void transmitStr(uint8_t *data, uint8_t *out, uint32_t size);
+
   uint8_t readByteBuf1(uint16_t pageAddr);
   void readStrBuf1(uint16_t addr, uint8_t *data, size_t size);
   void writeByteBuf1(uint16_t addr, uint8_t data);
   void writeStrBuf1(uint16_t addr, uint8_t *data, size_t size);
-
   void writeBuf1ToPage(uint16_t pageAddr);
   void readPageToBuf1(uint16_t PageAdr);
+
+  uint8_t readByteBuf2(uint16_t pageAddr);
+  void readStrBuf2(uint16_t addr, uint8_t *data, size_t size);
+  void writeByteBuf2(uint16_t addr, uint8_t data);
+  void writeStrBuf2(uint16_t addr, uint8_t *data, size_t size);
+  void writeBuf2ToPage(uint16_t pageAddr);
+  void readPageToBuf2(uint16_t PageAdr);
 
   void pageErase(uint16_t pageAddr);
   void chipErase();
