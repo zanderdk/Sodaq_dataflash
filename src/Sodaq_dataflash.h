@@ -114,7 +114,6 @@ private:
 
   uint8_t _csPin;
   size_t _pageAddrShift;
-  SPISettings _settings;
 };
 
 extern Sodaq_Dataflash dflash;

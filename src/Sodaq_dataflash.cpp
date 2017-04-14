@@ -53,6 +53,9 @@ void Sodaq_Dataflash::init(uint8_t csPin) {
   _csPin = csPin;
 
   // Call the standard SPI initialisation
+  SPI.setBitOrder(SPI_MSBFIRST);
+  SPI.setDataMode(SPI_MODE0);
+  SPI.setFrequency(20000000);
   SPI.begin();
 
   // This is used when CS != SS
@@ -217,16 +220,14 @@ void Sodaq_Dataflash::chipErase() {
   waitTillReady();
 }
 
-void Sodaq_Dataflash::settings(SPISettings settings) { _settings = settings; }
+void Sodaq_Dataflash::settings(SPISettings settings) {
+  SPI.setBitOrder(settings._bitOrder);
+  SPI.setDataMode(settings._dataMode);
+  SPI.setFrequency(settings._clock);
+}
 
-void Sodaq_Dataflash::deactivate() {
-  digitalWrite(_csPin, HIGH);
-  SPI.endTransaction();
-}
-void Sodaq_Dataflash::activate() {
-  SPI.beginTransaction(_settings);
-  digitalWrite(_csPin, LOW);
-}
+void Sodaq_Dataflash::deactivate() { digitalWrite(_csPin, HIGH); }
+void Sodaq_Dataflash::activate() { digitalWrite(_csPin, LOW); }
 
 void Sodaq_Dataflash::setPageAddr(unsigned int pageAddr) {
   write(getPageAddrByte0(pageAddr));
