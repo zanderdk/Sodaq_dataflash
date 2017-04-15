@@ -39,13 +39,13 @@
 #define FlashToBuf1Transfer 0x53 // Main memory page to buffer 1 transfer
 #define Buf1Read 0xD4            // Buffer 1 read
 #define Buf1ToFlashWE                                                          \
-  0x83 // Buffer 1 to main memory page program with built-in erase
+  0x88 // Buffer 1 to main memory page program with built-in erase
 #define Buf1Write 0x84 // Buffer 1 write
 
 #define FlashToBuf2Transfer 0x55 // Main memory page to buffer 2 transfer
 #define Buf2Read 0xD6            // Buffer 2 read
 #define Buf2ToFlashWE                                                          \
-  0x86 // Buffer 2 to main memory page program with built-in erase
+  0x89 // Buffer 2 to main memory page program with built-in erase
 #define Buf2Write 0x87 // Buffer 2 write
 
 void Sodaq_Dataflash::init(uint8_t csPin) {
@@ -327,7 +327,7 @@ void Sodaq_Dataflash::pageErase(uint16_t pageAddr) {
   write(PageErase);
   setPageAddr(pageAddr);
   deactivate();
-  // waitTillReady();
+  waitTillReady();
 }
 
 void Sodaq_Dataflash::chipErase() {
@@ -337,7 +337,7 @@ void Sodaq_Dataflash::chipErase() {
   write(0x80);
   write(0x9A);
   deactivate();
-  // waitTillReady();
+  waitTillReady();
 }
 
 void Sodaq_Dataflash::settings(SPISettings settings) {
