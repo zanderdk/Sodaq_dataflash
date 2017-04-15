@@ -122,11 +122,11 @@ void Sodaq_Dataflash::readSequential(uint8_t *buf) {
   if (readAddr % 2 == 0) {
     readPageToBuf1(readAddr++);
     waitTillReady();
-    readStrBuf1(0, buf, 256);
+    readStrBuf1(0, buf, 264);
   } else {
     readPageToBuf2(readAddr++);
     waitTillReady();
-    readStrBuf2(0, buf, 256);
+    readStrBuf2(0, buf, 264);
   }
 }
 
@@ -138,7 +138,8 @@ void Sodaq_Dataflash::InitSequential() {
 bool Sodaq_Dataflash::writeSequential(uint8_t data) {
   write(data);
   ++offset;
-  if (offset == 0) {
+  if (offset == 264) {
+    offset = 0;
     dflash.deactivate();
     if (addr % 2 == 0) {
       waitTillReady();

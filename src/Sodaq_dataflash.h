@@ -126,7 +126,7 @@ private:
   uint8_t getPageAddrByte1(uint16_t pageAddr);
   uint8_t getPageAddrByte2(uint16_t pageAddr);
   uint16_t addr = 0;
-  uint8_t offset = 0;
+  uint16_t offset = 0;
   uint16_t readAddr = 0;
   uint8_t _csPin;
   size_t _pageAddrShift;
