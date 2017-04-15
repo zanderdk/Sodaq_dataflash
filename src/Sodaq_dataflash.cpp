@@ -118,6 +118,43 @@ void Sodaq_Dataflash::readID(uint8_t *data) {
   deactivate();
 }
 
+void Sodaq_Dataflash::readSequential(uint8_t *buf) {
+  if (readAddr % 2 == 0) {
+    readPageToBuf1(readAddr++);
+    waitTillReady();
+    readStrBuf1(0, buf, 256);
+  } else {
+    readPageToBuf2(readAddr++);
+    waitTillReady();
+    readStrBuf2(0, buf, 256);
+  }
+}
+
+void Sodaq_Dataflash::InitSequential() {
+  activate();
+  dflash.beginWriteBuf1(0);
+}
+
+bool Sodaq_Dataflash::writeSequential(uint8_t data) {
+  write(data);
+  ++offset;
+  if (offset == 0) {
+    dflash.deactivate();
+    if (addr % 2 == 0) {
+      waitTillReady();
+      writeBuf1ToPage(addr++);
+      activate();
+      dflash.beginWriteBuf2(0);
+    } else {
+      waitTillReady();
+      writeBuf2ToPage(addr++);
+      activate();
+      dflash.beginWriteBuf1(0);
+    }
+  }
+  return true;
+}
+
 // Reads a number of bytes from one of the Dataflash security register
 void Sodaq_Dataflash::readSecurityReg(uint8_t *data, size_t size) {
   activate();
@@ -137,7 +174,6 @@ void Sodaq_Dataflash::readPageToBuf1(uint16_t pageAddr) {
   write(FlashToBuf1Transfer);
   setPageAddr(pageAddr);
   deactivate();
-  waitTillReady();
 }
 
 // Transfers a page from flash to Dataflash SRAM buffer
@@ -146,7 +182,6 @@ void Sodaq_Dataflash::readPageToBuf2(uint16_t pageAddr) {
   write(FlashToBuf2Transfer);
   setPageAddr(pageAddr);
   deactivate();
-  waitTillReady();
 }
 
 // Reads one byte from one of the Dataflash internal SRAM buffer 1

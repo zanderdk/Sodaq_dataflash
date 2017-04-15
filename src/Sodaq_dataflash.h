@@ -88,12 +88,14 @@ public:
   void deactivate();
   void beginWriteBuf1(uint16_t addr);
   void beginWriteBuf2(uint16_t addr);
+  bool writeSequential(uint8_t data);
 
   void beginReadBuf1(uint16_t addr);
   void beginReadBuf2(uint16_t addr);
   void write(uint8_t data);
   void writeStr(uint8_t *data, size_t size);
   void transmitStr(uint8_t *data, uint8_t *out, uint32_t size);
+  void readSequential(uint8_t *buf);
 
   uint8_t readByteBuf1(uint16_t pageAddr);
   void readStrBuf1(uint16_t addr, uint8_t *data, size_t size);
@@ -108,6 +110,7 @@ public:
   void writeStrBuf2(uint16_t addr, uint8_t *data, size_t size);
   void writeBuf2ToPage(uint16_t pageAddr);
   void readPageToBuf2(uint16_t PageAdr);
+  void InitSequential();
 
   void pageErase(uint16_t pageAddr);
   void chipErase();
@@ -122,7 +125,9 @@ private:
   uint8_t getPageAddrByte0(uint16_t pageAddr);
   uint8_t getPageAddrByte1(uint16_t pageAddr);
   uint8_t getPageAddrByte2(uint16_t pageAddr);
-
+  uint16_t addr = 0;
+  uint8_t offset = 0;
+  uint16_t readAddr = 0;
   uint8_t _csPin;
   size_t _pageAddrShift;
 };
