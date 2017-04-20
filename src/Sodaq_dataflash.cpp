@@ -1,28 +1,3 @@
-/*
- * Copyright (c) 2013 Kees Bakker.  All rights reserved.
- *
- * This file is part of Sodaq_dataflash.
- *
- * Sodaq_dataflash is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published bythe Free Software Foundation, either version 3 of
- * the License, or(at your option) any later version.
- *
- * Sodaq_dataflash is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with Sodaq_dataflash.  If not, see
- * <http://www.gnu.org/licenses/>.
- */
-
-/*
- * This library was inspired by dataflash libraries by Atmel, asynclabs,
- * and others.
- */
-
 #include <Arduino.h>
 #include <SPI.h>
 #include <stdint.h>
@@ -48,31 +23,22 @@
   0x89 // Buffer 2 to main memory page program with built-in erase
 #define Buf2Write 0x87 // Buffer 2 write
 
-void Sodaq_Dataflash::init(uint8_t csPin) {
+Sodaq_Dataflash::Sodaq_Dataflash(uint8_t csPin) {
   // Setup the slave select pin
   _csPin = csPin;
 
-  // Call the standard SPI initialisation
-  SPI.setBitOrder(SPI_MSBFIRST);
-  SPI.setDataMode(SPI_MODE0);
-  SPI.setFrequency(20000000);
-  SPI.begin();
-
   // This is used when CS != SS
   pinMode(_csPin, OUTPUT);
-
-#if DF_VARIANT == DF_AT45DB081D
-  _pageAddrShift = 1;
-#elif DF_VARIANT == DF_AT45DB161D
-  _pageAddrShift = 1;
-#elif DF_VARIANT == DF_AT45DB041D
-  _pageAddrShift = 1;
-#endif
+  deactivate();
 }
 
-void Sodaq_Dataflash::init(uint8_t misoPin, uint8_t mosiPin, uint8_t sckPin,
-                           uint8_t ssPin) {
-  init(ssPin);
+void Sodaq_Dataflash::init() {
+
+  // Call the standard SPI initialisation
+  SPI.setBitOrder(SPI_MSBFIRST);
+  SPI.setFrequency(20000000);
+  SPI.setDataMode(SPI_MODE0);
+  SPI.begin();
 }
 
 uint8_t Sodaq_Dataflash::transmit(uint8_t data) {
@@ -119,41 +85,41 @@ void Sodaq_Dataflash::readID(uint8_t *data) {
 }
 
 void Sodaq_Dataflash::readSequential(uint8_t *buf) {
-  if (readAddr % 2 == 0) {
-    readPageToBuf1(readAddr++);
-    waitTillReady();
-    readStrBuf1(0, buf, 264);
-  } else {
-    readPageToBuf2(readAddr++);
-    waitTillReady();
-    readStrBuf2(0, buf, 264);
-  }
+  readPageToBuf1(readAddr++);
+  waitTillReady();
+  readStrBuf1(0, buf, DF_PAGE_SIZE);
 }
 
 void Sodaq_Dataflash::InitSequential() {
   activate();
-  dflash.beginWriteBuf1(0);
+  beginWriteBuf1(0);
 }
 
-bool Sodaq_Dataflash::writeSequential(uint8_t data) {
+void Sodaq_Dataflash::writeSequential(uint8_t data) {
+  if (offset == 0) {
+    activate();
+    if (!nextBuf) {
+      beginWriteBuf1(0);
+    } else {
+      beginWriteBuf2(0);
+    }
+  }
+
   write(data);
   ++offset;
-  if (offset == 264) {
+
+  if (offset == DF_PAGE_SIZE) {
     offset = 0;
-    dflash.deactivate();
+    deactivate();
     if (addr % 2 == 0) {
       waitTillReady();
       writeBuf1ToPage(addr++);
-      activate();
-      dflash.beginWriteBuf2(0);
     } else {
       waitTillReady();
       writeBuf2ToPage(addr++);
-      activate();
-      dflash.beginWriteBuf1(0);
     }
+    nextBuf = !nextBuf;
   }
-  return true;
 }
 
 // Reads a number of bytes from one of the Dataflash security register
@@ -358,10 +324,10 @@ void Sodaq_Dataflash::setPageAddr(unsigned int pageAddr) {
 
 /*
  * From the AT45DB081D documentation (other variants are not really identical)
- *   "For the DataFlash standard page size (264-bytes), the opcode must be
- *    followed by three address bytes consist of three don’t care bits,
- *    12 page address bits (PA11 - PA0) that specify the page in the main
- *    memory to be written and nine don’t care bits."
+ *   "For the DataFlash standard page size (DF_PAGE_SIZE-bytes), the opcode must
+ * be followed by three address bytes consist of three don’t care bits, 12 page
+ * address bits (PA11 - PA0) that specify the page in the main memory to be
+ * written and nine don’t care bits."
  */
 /*
  * From the AT45DB161B documentation
@@ -372,8 +338,8 @@ void Sodaq_Dataflash::setPageAddr(unsigned int pageAddr) {
  */
 /*
  * From the AT45DB041D documentation
- *   "For the DataFlash standard page size (264-bytes), the opcode must be
- *   followed by three address bytes consist of four don’t care bits, 11 page
+ *   "For the DataFlash standard page size (DF_PAGE_SIZE-bytes), the opcode must
+ * be followed by three address bytes consist of four don’t care bits, 11 page
  *   address bits (PA10 - PA0) that specify the page in the main memory to
  *   be written and nine don’t care bits."
  */
@@ -387,6 +353,3 @@ uint8_t Sodaq_Dataflash::getPageAddrByte1(uint16_t page) {
   return page << (DF_PAGE_BITS - 8);
 }
 uint8_t Sodaq_Dataflash::getPageAddrByte2(uint16_t page) { return 0; }
-
-// Use a single common instance
-Sodaq_Dataflash dflash;
