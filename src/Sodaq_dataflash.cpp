@@ -21,7 +21,8 @@
 #define Buf2Read 0xD6            // Buffer 2 read
 #define Buf2ToFlashWE                                                          \
   0x89 // Buffer 2 to main memory page program with built-in erase
-#define Buf2Write 0x87 // Buffer 2 write
+#define Buf2Write 0x87   // Buffer 2 write
+#define SectorErase 0x7C // Sector Erase
 
 Sodaq_Dataflash::Sodaq_Dataflash(uint8_t csPin) {
   // Setup the slave select pin
@@ -39,6 +40,14 @@ void Sodaq_Dataflash::init() {
   SPI.setFrequency(20000000);
   SPI.setDataMode(SPI_MODE0);
   SPI.begin();
+}
+
+void Sodaq_Dataflash::sectorErase(uint16_t pageAddr) {
+  activate();
+  write(SectorErase);
+  setPageAddr(pageAddr);
+  deactivate();
+  waitTillReady();
 }
 
 uint8_t Sodaq_Dataflash::transmit(uint8_t data) {

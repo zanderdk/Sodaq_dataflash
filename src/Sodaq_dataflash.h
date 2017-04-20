@@ -27,6 +27,7 @@ public:
   void writeStr(uint8_t *data, size_t size);
   void transmitStr(uint8_t *data, uint8_t *out, uint32_t size);
   void readSequential(uint8_t *buf);
+  void sectorErase(uint16_t pageAddr);
 
   uint8_t readByteBuf1(uint16_t pageAddr);
   void readStrBuf1(uint16_t addr, uint8_t *data, size_t size);

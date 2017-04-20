@@ -9,6 +9,7 @@ public:
   void init();
   void writeSequential(uint8_t data);
   void readSequential(uint8_t *out);
+  void erasePagesBySector(uint32_t pages);
   void erasePages(uint32_t pages);
   void deactivate();
   void waitTillReady();
