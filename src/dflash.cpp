@@ -19,12 +19,12 @@ void dflash::waitTillReady() {
   }
 }
 
-void dflash::erasePagesBySector(uint32_t pages) {
+void dflash::erasePagesBySector(int32_t pages) {
   uint32_t pageAddr = 0;
   while (pages > 0) {
     for (auto flash : flashes) {
-      flash.pageErase(pageAddr);
-      pages += 256;
+      flash.sectorErase(pageAddr);
+      pages -= 256;
     }
     pageAddr += 256;
   }

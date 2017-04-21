@@ -14,22 +14,19 @@
 #define FlashToBuf1Transfer 0x53 // Main memory page to buffer 1 transfer
 #define Buf1Read 0xD4            // Buffer 1 read
 #define Buf1ToFlashWE                                                          \
-  0x88 // Buffer 1 to main memory page program with built-in erase
+  0x83 // 0x88 // Buffer 1 to main memory page program with built-in erase
 #define Buf1Write 0x84 // Buffer 1 write
 
 #define FlashToBuf2Transfer 0x55 // Main memory page to buffer 2 transfer
 #define Buf2Read 0xD6            // Buffer 2 read
 #define Buf2ToFlashWE                                                          \
-  0x89 // Buffer 2 to main memory page program with built-in erase
+  0x86 //  0x89 // Buffer 2 to main memory page program with built-in erase
 #define Buf2Write 0x87   // Buffer 2 write
 #define SectorErase 0x7C // Sector Erase
 
-Sodaq_Dataflash::Sodaq_Dataflash(uint8_t csPin) {
-  // Setup the slave select pin
-  _csPin = csPin;
-
+Sodaq_Dataflash::Sodaq_Dataflash(uint8_t csPin) : csPin(csPin) {
   // This is used when CS != SS
-  pinMode(_csPin, OUTPUT);
+  pinMode(csPin, OUTPUT);
   deactivate();
 }
 
@@ -43,11 +40,20 @@ void Sodaq_Dataflash::init() {
 }
 
 void Sodaq_Dataflash::sectorErase(uint16_t pageAddr) {
+  if (pageAddr == 0) {
+    waitTillReady();
+    activate();
+    write(SectorErase);
+    write(0x00);
+    write(0xf0);
+    write(0x00);
+    deactivate();
+  }
+  waitTillReady();
   activate();
   write(SectorErase);
   setPageAddr(pageAddr);
   deactivate();
-  waitTillReady();
 }
 
 uint8_t Sodaq_Dataflash::transmit(uint8_t data) {
@@ -322,8 +328,8 @@ void Sodaq_Dataflash::settings(SPISettings settings) {
   SPI.setFrequency(settings._clock);
 }
 
-void Sodaq_Dataflash::deactivate() { digitalWrite(_csPin, HIGH); }
-void Sodaq_Dataflash::activate() { digitalWrite(_csPin, LOW); }
+void Sodaq_Dataflash::deactivate() { digitalWrite(csPin, HIGH); }
+void Sodaq_Dataflash::activate() { digitalWrite(csPin, LOW); }
 
 void Sodaq_Dataflash::setPageAddr(unsigned int pageAddr) {
   write(getPageAddrByte0(pageAddr));

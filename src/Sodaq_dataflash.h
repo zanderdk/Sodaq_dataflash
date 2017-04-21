@@ -49,6 +49,7 @@ public:
 
   void waitTillReady();
   void settings(SPISettings settings);
+  uint8_t csPin;
 
 private:
   uint8_t readStatus();
@@ -61,6 +62,5 @@ private:
   uint16_t offset = 0;
   uint16_t readAddr = 0;
   uint8_t nextBuf = 0;
-  uint8_t _csPin;
   size_t _pageAddrShift;
 };
